@@ -168,7 +168,7 @@ object TreeBuilder {
     randomBalancedDecisionTreeHelper(depth, featureArity, impurityCalculator,
       labelGenerator, Set.empty, rng)
   }
-  
+
   /**
    * Create an internal node.  Either create the leaf nodes beneath it, or recurse as needed.
    * @param subtreeDepth  Depth of subtree to build.  Depth 0 means this is a leaf node.

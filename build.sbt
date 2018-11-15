@@ -14,11 +14,7 @@ sparkPackageName := "databricks/spark-sql-perf"
 // All Spark Packages need a license
 licenses := Seq("Apache-2.0" -> url("http://opensource.org/licenses/Apache-2.0"))
 
-<<<<<<< HEAD
 sparkVersion := "3.0.0-SNAPSHOT"
-=======
-sparkVersion := "2.4.0"
->>>>>>> 85bbfd4ca22b386b3216af5434b44ad3b6a32b58
 
 sparkComponents ++= Seq("sql", "hive", "mllib")
 
