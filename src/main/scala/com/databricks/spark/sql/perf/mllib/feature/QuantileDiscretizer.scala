@@ -14,10 +14,10 @@ object QuantileDiscretizer extends BenchmarkAlgorithm with TestFromTraining with
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    import ctx.sqlContext.implicits._
+    import ctx.spark.implicits._
 
     DataGenerator.generateContinuousFeatures(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

@@ -15,7 +15,7 @@ object LinearSVC extends BenchmarkAlgorithm
   override protected def initialData(ctx: MLBenchContext) = {
     import ctx.params._
     DataGenerator.generateContinuousFeatures(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

@@ -16,7 +16,7 @@ private[mllib] trait TreeOrForestEstimator
   override protected def initialData(ctx: MLBenchContext) = {
     import ctx.params._
     val featureArity: Array[Int] = TreeOrForestEstimator.getFeatureArity(ctx)
-    val data: DataFrame = DataGenerator.generateMixedFeatures(ctx.sqlContext, numExamples,
+    val data: DataFrame = DataGenerator.generateMixedFeatures(ctx.spark, numExamples,
       ctx.seed(), numPartitions, featureArity)
     TreeUtils.setMetadata(data, "features", featureArity)
   }

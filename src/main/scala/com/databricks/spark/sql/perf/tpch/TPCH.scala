@@ -16,13 +16,11 @@
 
 package com.databricks.spark.sql.perf.tpch
 import scala.sys.process._
-
 import com.databricks.spark.sql.perf.{Benchmark, BlockingLineStream, DataGenerator, Table, Tables}
 import com.databricks.spark.sql.perf.ExecutionMode.CollectResults
 import org.apache.commons.io.IOUtils
-
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 
 class DBGEN(dbgenDir: String, params: Seq[String]) extends DataGenerator {
   val dbgen = s"$dbgenDir/dbgen"
@@ -64,14 +62,14 @@ class DBGEN(dbgenDir: String, params: Seq[String]) extends DataGenerator {
 }
 
 class TPCHTables(
-    sqlContext: SQLContext,
+    spark: SparkSession,
     dbgenDir: String,
     scaleFactor: String,
     useDoubleForDecimal: Boolean = false,
     useStringForDate: Boolean = false,
     generatorParams: Seq[String] = Nil)
-    extends Tables(sqlContext, scaleFactor, useDoubleForDecimal, useStringForDate) {
-  import sqlContext.implicits._
+    extends Tables(spark, scaleFactor, useDoubleForDecimal, useStringForDate) {
+  import spark.implicits._
 
   val dataGenerator = new DBGEN(dbgenDir, generatorParams)
 
@@ -164,8 +162,8 @@ class TPCHTables(
   ).map(_.convertTypes())
 }
 
-class TPCH(@transient sqlContext: SQLContext)
-  extends Benchmark(sqlContext) {
+class TPCH(@transient spark: SparkSession)
+  extends Benchmark(spark) {
 
   val queries = (1 to 22).map { q =>
     val queryContent: String = IOUtils.toString(

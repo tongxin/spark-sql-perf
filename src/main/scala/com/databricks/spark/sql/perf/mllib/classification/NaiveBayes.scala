@@ -21,7 +21,7 @@ object NaiveBayes extends BenchmarkAlgorithm
     // All features for Naive Bayes must be categorical, i.e. have arity >= 2
     val featureArity = 0.until(numFeatures).map(_ => 2 + rng.nextInt(maxFeatureArity - 2)).toArray
     DataGenerator.generateMixedFeatures(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

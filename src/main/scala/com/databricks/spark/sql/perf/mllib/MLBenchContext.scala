@@ -2,8 +2,8 @@ package com.databricks.spark.sql.perf.mllib
 
 import java.util.Random
 
-import com.databricks.spark.sql.perf.{MLParams}
-import org.apache.spark.sql.SQLContext
+import com.databricks.spark.sql.perf.MLParams
+import org.apache.spark.sql.{SQLContext, SparkSession}
 
 
 /**
@@ -14,7 +14,7 @@ import org.apache.spark.sql.SQLContext
  */
 case class MLBenchContext(
     params: MLParams,
-    sqlContext: SQLContext) {
+    spark: SparkSession) {
 
   // Some seed fixed for the context.
   private val internalSeed: Long  = {

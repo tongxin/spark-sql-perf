@@ -19,7 +19,7 @@ object LDA extends BenchmarkAlgorithm with TestFromTraining {
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    val rdd = ctx.sqlContext.sparkContext.parallelize(
+    val rdd = ctx.spark.sparkContext.parallelize(
       0L until numExamples,
       numPartitions
     )
@@ -41,7 +41,7 @@ object LDA extends BenchmarkAlgorithm with TestFromTraining {
         (docIndex, Vectors.sparse(numVocab, iter))
       }
     }
-    ctx.sqlContext.createDataFrame(data).toDF("docIndex", "features")
+    ctx.spark.createDataFrame(data).toDF("docIndex", "features")
   }
 
   override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {

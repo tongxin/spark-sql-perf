@@ -2,7 +2,7 @@ package com.databricks.spark.sql.perf
 
 class AggregationPerformance extends Benchmark {
 
-  import sqlContext.implicits._
+  import spark.implicits._
   import ExecutionMode._
 
 
@@ -10,7 +10,7 @@ class AggregationPerformance extends Benchmark {
 
   val x = Table(
     "1milints", {
-      val df = sqlContext.range(0, 1000000).repartition(1)
+      val df = spark.range(0, 1000000).repartition(1)
       df.createTempView("1milints")
       df
     })
@@ -18,14 +18,14 @@ class AggregationPerformance extends Benchmark {
   val joinTables = Seq(
     Table(
       "100milints", {
-        val df = sqlContext.range(0, 100000000).repartition(10)
+        val df = spark.range(0, 100000000).repartition(10)
         df.createTempView("100milints")
         df
       }),
 
     Table(
       "1bilints", {
-        val df = sqlContext.range(0, 1000000000).repartition(10)
+        val df = spark.range(0, 1000000000).repartition(10)
         df.createTempView("1bilints")
         df
       }
@@ -46,15 +46,15 @@ class AggregationPerformance extends Benchmark {
     val fullSize = size * 10000L
     Table(
       s"twoGroups$fullSize", {
-        val df = sqlContext.range(0, fullSize).select($"id" % 2 as 'a, $"id" as 'b)
+        val df = spark.range(0, fullSize).select($"id" % 2 as 'a, $"id" as 'b)
         df.createTempView(s"twoGroups$fullSize")
         df
       })
   }
 
   val newAggreation = Variation("aggregationType", Seq("new", "old")) {
-    case "old" => sqlContext.setConf("spark.sql.useAggregate2", "false")
-    case "new" => sqlContext.setConf("spark.sql.useAggregate2", "true")
+    case "old" => spark.conf.set("spark.sql.useAggregate2", "false")
+    case "new" => spark.conf.set("spark.sql.useAggregate2", "true")
   }
 
   val varyNumGroupsAvg: Seq[Benchmarkable] = variousCardinality.map(_.name).map { table =>

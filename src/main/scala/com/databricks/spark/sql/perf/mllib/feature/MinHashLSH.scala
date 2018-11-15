@@ -15,7 +15,7 @@ object MinHashLSH extends BenchmarkAlgorithm with TestFromTraining {
     import ctx.params._
 
     val df = DataGenerator.generateMixedFeatures(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

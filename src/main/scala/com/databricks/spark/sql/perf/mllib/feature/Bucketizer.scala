@@ -16,10 +16,10 @@ object Bucketizer extends BenchmarkAlgorithm with TestFromTraining with UnaryTra
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    import ctx.sqlContext.implicits._
+    import ctx.spark.implicits._
     val rng = ctx.newGenerator()
     // For a bucketizer, training data consists of a single column of random doubles
-    DataGenerator.generateContinuousFeatures(ctx.sqlContext,
+    DataGenerator.generateContinuousFeatures(ctx.spark,
       numExamples, ctx.seed(), numPartitions, numFeatures = 1).rdd.map { case Row(vec: Vector) =>
         vec(0) // extract the single generated double value for each row
     }.toDF(inputCol)

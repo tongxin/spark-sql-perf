@@ -2,9 +2,8 @@ package com.databricks.spark.sql.perf.mllib
 
 import com.databricks.spark.sql.perf.mllib.classification.LogisticRegression
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
-
-import com.databricks.spark.sql.perf.{MLParams}
+import org.apache.spark.sql.{SQLContext, SparkSession}
+import com.databricks.spark.sql.perf.MLParams
 import OptionImplicits._
 
 case class MLTest(
@@ -27,11 +26,10 @@ object MLBenchmarks {
       )
   )
 
-  val context = SparkContext.getOrCreate()
-  val sqlContext: SQLContext = SQLContext.getOrCreate(context)
+  val spark = SparkSession.builder().getOrCreate()
 
   def benchmarkObjects: Seq[MLPipelineStageBenchmarkable] = benchmarks.map { mlb =>
-    new MLPipelineStageBenchmarkable(mlb.params, mlb.benchmark, sqlContext)
+    new MLPipelineStageBenchmarkable(mlb.params, mlb.benchmark, spark)
   }
 
 }

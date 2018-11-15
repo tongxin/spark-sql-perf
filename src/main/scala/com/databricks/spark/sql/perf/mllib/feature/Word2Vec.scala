@@ -20,7 +20,7 @@ object Word2Vec extends BenchmarkAlgorithm with TestFromTraining {
     import ctx.params._
 
     val df = DataGenerator.generateDoc(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

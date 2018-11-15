@@ -18,6 +18,7 @@ package com.databricks.spark.sql.perf
 
 import org.apache.spark.sql.Encoders
 import org.apache.spark.sql.expressions.Aggregator
+import org.apache.spark.sql.SparkSession
 
 object TypedAverage extends Aggregator[Long, SumAndCount, Double] {
   override def zero: SumAndCount = SumAndCount(0L, 0)
@@ -47,14 +48,14 @@ case class SumAndCount(var sum: Long, var count: Int)
 
 class DatasetPerformance extends Benchmark {
 
-  import sqlContext.implicits._
+  import spark.implicits._
 
   val numLongs = 100000000
-  val ds = sqlContext.range(1, numLongs)
+  val ds = spark.range(1, numLongs)
   val rdd = sparkContext.range(1, numLongs)
 
   val smallNumLongs = 1000000
-  val smallds = sqlContext.range(1, smallNumLongs).as[Long]
+  val smallds = spark.range(1, smallNumLongs).as[Long]
   val smallrdd = sparkContext.range(1, smallNumLongs)
 
   def allBenchmarks =  range ++ backToBackFilters ++ backToBackMaps ++ computeAverage

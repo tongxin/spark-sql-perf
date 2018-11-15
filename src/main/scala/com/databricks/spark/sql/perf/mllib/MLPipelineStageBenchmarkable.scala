@@ -14,7 +14,7 @@ import com.databricks.spark.sql.perf._
 class MLPipelineStageBenchmarkable(
     params: MLParams,
     test: BenchmarkAlgorithm,
-    sqlContext: SQLContext)
+    spark: SparkSession)
   extends Benchmarkable with Serializable with Logging {
 
   import MLPipelineStageBenchmarkable._
@@ -22,7 +22,7 @@ class MLPipelineStageBenchmarkable(
   private var testData: DataFrame = null
   private var trainingData: DataFrame = null
   private var testDataCount: Option[Long] = None
-  private val param = MLBenchContext(params, sqlContext)
+  private val param = MLBenchContext(params, spark)
 
   override val name = test.name
 

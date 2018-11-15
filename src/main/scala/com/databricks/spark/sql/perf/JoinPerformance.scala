@@ -7,13 +7,13 @@ class JoinPerformance extends Benchmark {
 
 
   import ExecutionMode._
-  import sqlContext.implicits._
+  import spark.implicits._
 
-  private val table = sqlContext.table _
+  private val table = spark.table _
 
   val x = Table(
     "1milints", {   // 1.5 mb, 1 file
-      val df = sqlContext.range(0, 1000000).repartition(1)
+      val df = spark.range(0, 1000000).repartition(1)
       df.createTempView("1milints")
       df
     })
@@ -21,14 +21,14 @@ class JoinPerformance extends Benchmark {
   val joinTables = Seq(
     Table(
       "100milints", {  // 143.542mb, 10 files
-        val df = sqlContext.range(0, 100000000).repartition(10)
+        val df = spark.range(0, 100000000).repartition(10)
         df.createTempView("100milints")
         df
       }),
 
     Table(
       "1bilints", {  // 143.542mb, 10 files
-        val df = sqlContext.range(0, 1000000000).repartition(10)
+        val df = spark.range(0, 1000000000).repartition(10)
         df.createTempView("1bilints")
         df
       }
@@ -36,8 +36,8 @@ class JoinPerformance extends Benchmark {
   )
 
   val sortMergeJoin = Variation("sortMergeJoin", Seq("on", "off")) {
-    case "off" => sqlContext.setConf("spark.sql.planner.sortMergeJoin", "false")
-    case "on" => sqlContext.setConf("spark.sql.planner.sortMergeJoin", "true")
+    case "off" => spark.conf.set("spark.sql.planner.sortMergeJoin", "false")
+    case "on" => spark.conf.set("spark.sql.planner.sortMergeJoin", "true")
   }
 
   val singleKeyJoins: Seq[Benchmarkable] = Seq("1milints", "100milints", "1bilints").flatMap { table1 =>

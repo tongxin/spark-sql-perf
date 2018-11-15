@@ -24,7 +24,7 @@ object VectorAssembler extends BenchmarkAlgorithm with TestFromTraining {
       s"numInputCols (${numInputCols}) cannot be greater than numFeatures (${numFeatures}).")
 
     val df = DataGenerator.generateContinuousFeatures(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

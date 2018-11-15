@@ -14,9 +14,9 @@ object StringIndexer extends BenchmarkAlgorithm with TestFromTraining with Unary
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    import ctx.sqlContext.implicits._
+    import ctx.spark.implicits._
 
-    DataGenerator.generateRandString(ctx.sqlContext,
+    DataGenerator.generateRandString(ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,
@@ -26,7 +26,7 @@ object StringIndexer extends BenchmarkAlgorithm with TestFromTraining with Unary
 
   override def getPipelineStage(ctx: MLBenchContext): PipelineStage = {
     import ctx.params._
-    import ctx.sqlContext.implicits._
+    import ctx.spark.implicits._
 
     new ml.feature.StringIndexer()
       .setInputCol(inputCol)

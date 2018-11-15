@@ -13,7 +13,7 @@ object KMeans extends BenchmarkAlgorithm with TestFromTraining {
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    DataGenerator.generateGaussianMixtureData(ctx.sqlContext, k, numExamples, ctx.seed(),
+    DataGenerator.generateGaussianMixtureData(ctx.spark, k, numExamples, ctx.seed(),
       numPartitions, numFeatures)
   }
 

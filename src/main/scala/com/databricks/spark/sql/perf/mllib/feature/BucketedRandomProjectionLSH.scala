@@ -15,7 +15,7 @@ object BucketedRandomProjectionLSH extends BenchmarkAlgorithm with TestFromTrain
     import ctx.params._
 
     val df = DataGenerator.generateContinuousFeatures(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

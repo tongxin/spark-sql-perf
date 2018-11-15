@@ -16,17 +16,15 @@
 
 package com.databricks.spark.sql.perf
 
-import java.io.{FileOutputStream, File}
+import java.io.{File, FileOutputStream}
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.spark.sql.{DataFrame, SQLContext, Row}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.functions._
 
 import scala.language.reflectiveCalls
 import scala.sys.process._
-
 import org.apache.hadoop.fs.{FileSystem, Path}
-
 import com.twitter.jvm.CpuProfile
 
 /**
@@ -54,10 +52,10 @@ package object cpu {
 
   def getCpuLocation(timestamp: Long) = s"$resultsLocation/timestamp=$timestamp"
 
-  def collectLogs(sqlContext: SQLContext, fs: FS, timestamp: Long): String = {
-    import sqlContext.implicits._
+  def collectLogs(spark: SparkSession, fs: FS, timestamp: Long): String = {
+    import spark.implicits._
 
-    def sc = sqlContext.sparkContext
+    def sc = spark.sparkContext
 
     def copyLogFiles() = {
       val path = "pwd".!!.trim
@@ -91,8 +89,8 @@ package object cpu {
     (exitCode, output.toString())
   }
 
-  class Profile(private val sqlContext: SQLContext, cpuLogs: DataFrame) {
-    import sqlContext.implicits._
+  class Profile(private val spark: SparkSession, cpuLogs: DataFrame) {
+    import spark.implicits._
 
     def hosts = cpuLogs.select($"tags.hostName").distinct.collect().map(_.getString(0))
 

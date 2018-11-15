@@ -31,18 +31,15 @@ val filterNull = false
 val shuffle = true
 
 // s3/dbfs path to generate the data to.
-val rootDir = s"/mnt/performance-datasets/tpcds/sf$scaleFactor-$format/useDecimal=$useDecimal,useDate=$useDate,filterNull=$filterNull"
+val rootDir = s"/tmp/tpcds/sf$scaleFactor-$format/useDecimal=$useDecimal,useDate=$useDate,filterNull=$filterNull"
 // name of database to be created.
-val databaseName = s"tpcds_sf${scaleFactor}" +
-  s"""_${if (useDecimal) "with" else "no"}decimal""" +
-  s"""_${if (useDate) "with" else "no"}date""" +
-  s"""_${if (filterNull) "no" else "with"}nulls"""
+val databaseName = s"tpcds_sf${scaleFactor}" + s"""_${if (useDecimal) "with" else "no"}decimal""" + s"""_${if (useDate) "with" else "no"}date""" + s"""_${if (filterNull) "no" else "with"}nulls"""
 
 // COMMAND ----------
 
 // Create the table schema with the specified parameters.
 import com.databricks.spark.sql.perf.tpcds.TPCDSTables
-val tables = new TPCDSTables(sqlContext, dsdgenDir = "/tmp/tpcds-kit/tools", scaleFactor = scaleFactor, useDoubleForDecimal = !useDecimal, useStringForDate = !useDate)
+val tables = new TPCDSTables(spark, dsdgenDir = "/tmp/tpcds-kit/tools", scaleFactor = scaleFactor, useDoubleForDecimal = !useDecimal, useStringForDate = !useDate)
 
 // COMMAND ----------
 
@@ -108,14 +105,14 @@ import org.apache.spark.deploy.SparkHadoopUtil
 // Limit the memory used by parquet writer
 SparkHadoopUtil.get.conf.set("parquet.memory.pool.ratio", "0.1")
 // Compress with snappy:
-sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
+spark.conf.set("spark.sql.parquet.compression.codec", "snappy")
 // TPCDS has around 2000 dates.
 spark.conf.set("spark.sql.shuffle.partitions", "2000")
 // Don't write too huge files.
-sqlContext.setConf("spark.sql.files.maxRecordsPerFile", "20000000")
+spark.conf.set("spark.sql.files.maxRecordsPerFile", "20000000")
 
-val dsdgen_partitioned=10000 // recommended for SF10000+.
-val dsdgen_nonpartitioned=10 // small tables do not need much parallelism in generation.
+val dsdgen_partitioned=100 // recommended for SF10000+.
+val dsdgen_nonpartitioned=1 // small tables do not need much parallelism in generation.
 
 // COMMAND ----------
 
@@ -159,12 +156,12 @@ println("Done generating partitioned tables.")
 
 // COMMAND ----------
 
-sql(s"drop database if exists $databaseName cascade")
-sql(s"create database $databaseName")
+spark.sql(s"drop database if exists $databaseName cascade")
+spark.sql(s"create database $databaseName")
 
 // COMMAND ----------
 
-sql(s"use $databaseName")
+spark.sql(s"use $databaseName")
 
 // COMMAND ----------
 

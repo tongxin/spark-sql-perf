@@ -17,7 +17,7 @@ object FPGrowth extends BenchmarkAlgorithm with TestFromTraining {
     import ctx.params._
 
     DataGenerator.generateItemSet(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

@@ -45,7 +45,6 @@ object ModelBuilderSSP {
       s" but was given $numClasses")
     val rootNode = TreeBuilder.randomBalancedDecisionTree(depth = depth, labelType = numClasses,
       featureArity = featureArity, seed = seed)
-      .asInstanceOf[ClassificationNode]
     new DecisionTreeClassificationModel(rootNode, numFeatures = featureArity.length,
       numClasses = numClasses)
   }
@@ -56,7 +55,6 @@ object ModelBuilderSSP {
       seed: Long): DecisionTreeRegressionModel = {
     val rootNode = TreeBuilder.randomBalancedDecisionTree(depth = depth, labelType = 0,
       featureArity = featureArity, seed = seed)
-      .asInstanceOf[RegressionNode]
     new DecisionTreeRegressionModel(rootNode, numFeatures = featureArity.length)
   }
 
@@ -176,11 +174,7 @@ object TreeBuilder {
       prediction: Double,
       impurity: Double,
       impurityStats: ImpurityCalculator): LeafNode = {
-    if (isRegression) {
-      new RegressionLeafNode(prediction, impurity, impurityStats)
-    } else {
-      new ClassificationLeafNode(prediction, impurity, impurityStats)
-    }
+    new LeafNode(prediction, impurity, impurityStats)
   }
 
   private def createInternalNode(
@@ -192,15 +186,9 @@ object TreeBuilder {
       rightChild: Node,
       split: Split,
       impurityStats: ImpurityCalculator): InternalNode = {
-    if (isRegression) {
-      new RegressionInternalNode(prediction, impurity, gain,
-        leftChild.asInstanceOf[RegressionNode], rightChild.asInstanceOf[RegressionNode],
-        split, impurityStats)
-    } else {
-      new ClassificationInternalNode(prediction, impurity, gain,
-        leftChild.asInstanceOf[ClassificationNode], rightChild.asInstanceOf[ClassificationNode],
-        split, impurityStats)
-    }
+    new InternalNode(prediction, impurity, gain,
+      leftChild.asInstanceOf[Node], rightChild.asInstanceOf[Node],
+      split, impurityStats)
   }
 
   /**

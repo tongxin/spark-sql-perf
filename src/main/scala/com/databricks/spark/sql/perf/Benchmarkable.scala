@@ -23,15 +23,14 @@ import com.typesafe.scalalogging.slf4j.{LazyLogging => Logging}
 import scala.concurrent.duration._
 import scala.collection.mutable.ArrayBuffer
 import scala.util.control.NonFatal
-
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkEnv, SparkContext}
+import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.{SparkContext, SparkEnv}
 
 
 /** A trait to describe things that can be benchmarked. */
 trait Benchmarkable extends Logging {
-  @transient protected[this] val sqlContext = SQLContext.getOrCreate(SparkContext.getOrCreate())
-  @transient protected[this] val sparkContext = sqlContext.sparkContext
+  @transient protected[this] val spark = SparkSession.builder().appName("spark-sql-bench").master("local[2]").getOrCreate()
+  @transient protected[this] val sparkContext = spark.sparkContext
 
   val name: String
   protected val executionMode: ExecutionMode
@@ -50,7 +49,7 @@ trait Benchmarkable extends Logging {
     } else {
       doBenchmark(includeBreakdown, description, messages)
     }
-    afterBenchmark(sqlContext.sparkContext)
+    afterBenchmark(spark.sparkContext)
     result
   }
 

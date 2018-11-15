@@ -3,19 +3,17 @@ package com.databricks.spark.sql.perf.mllib
 
 import scala.io.Source
 import scala.language.implicitConversions
-
 import com.typesafe.scalalogging.slf4j.{LazyLogging => Logging}
-
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
-
 import com.databricks.spark.sql.perf._
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkSkewJoinProcFactory.SparkSkewJoinJoinProcessor
 
 
-class MLLib(sqlContext: SQLContext)
-  extends Benchmark(sqlContext) with Serializable {
+class MLLib(spark: SparkSession)
+  extends Benchmark(spark) with Serializable {
 
-  def this() = this(SQLContext.getOrCreate(SparkContext.getOrCreate()))
+  def this() = this(SparkSession.builder().getOrCreate())
 }
 
 object MLLib extends Logging {
@@ -62,7 +60,7 @@ object MLLib extends Logging {
   }
 
   private[mllib] def getBenchmarks(conf: YamlConfig): Seq[MLPipelineStageBenchmarkable] = {
-    val sqlContext = com.databricks.spark.sql.perf.mllib.MLBenchmarks.sqlContext
+    val sqlContext = com.databricks.spark.sql.perf.mllib.MLBenchmarks.spark
     val benchmarksDescriptions = conf.runnableBenchmarks
     benchmarksDescriptions.map { mlb =>
       new MLPipelineStageBenchmarkable(mlb.params, mlb.benchmark, sqlContext)

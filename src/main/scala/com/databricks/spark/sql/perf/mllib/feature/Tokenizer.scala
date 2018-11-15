@@ -14,10 +14,10 @@ object Tokenizer extends BenchmarkAlgorithm with TestFromTraining with UnaryTran
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    import ctx.sqlContext.implicits._
+    import ctx.spark.implicits._
 
     DataGenerator.generateDoc(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

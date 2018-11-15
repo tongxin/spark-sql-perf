@@ -18,9 +18,11 @@ package com.databricks.spark.sql.perf
 
 import java.net.InetAddress
 import java.io.File
-import org.apache.spark.sql.SQLContext
+
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.sql.functions._
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{SparkConf, SparkContext}
+
 import scala.util.Try
 
 case class RunConfig(
@@ -66,15 +68,10 @@ object RunBenchmark {
   }
 
   def run(config: RunConfig): Unit = {
-    val conf = new SparkConf()
-      .setMaster(config.master)
-      .setAppName(getClass.getName)
+    val spark = SparkSession.builder().appName(getClass.getName).master(config.master).getOrCreate()
+    import spark.implicits._
 
-    val sc = SparkContext.getOrCreate(conf)
-    val sqlContext = SQLContext.getOrCreate(sc)
-    import sqlContext.implicits._
-
-    sqlContext.setConf("spark.sql.perf.results",
+    spark.conf.set("spark.sql.perf.results",
       new File("performance").toURI.toString)
 
     val benchmark = Try {
@@ -106,7 +103,7 @@ object RunBenchmark {
     println("== STARTING EXPERIMENT ==")
     experiment.waitForFinish(1000 * 60 * 30)
 
-    sqlContext.setConf("spark.sql.shuffle.partitions", "1")
+    spark.conf.set("spark.sql.shuffle.partitions", "1")
       
     val toShow = experiment.getCurrentRuns()
         .withColumn("result", explode($"results"))
@@ -129,7 +126,7 @@ object RunBenchmark {
       val baselineTime = when($"timestamp" === baseTimestamp, $"executionTime").otherwise(null)
       val thisRunTime = when($"timestamp" === experiment.timestamp, $"executionTime").otherwise(null)
 
-      val data = sqlContext.read.json(benchmark.resultsLocation)
+      val data = spark.read.json(benchmark.resultsLocation)
           .coalesce(1)
           .where(s"timestamp IN ($baseTimestamp, ${experiment.timestamp})")
           .withColumn("result", explode($"results"))

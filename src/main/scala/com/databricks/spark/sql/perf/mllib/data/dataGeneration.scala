@@ -5,12 +5,12 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.recommendation.ALS.Rating
 import org.apache.spark.mllib.random._
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 
 object DataGenerator {
 
   def generateContinuousFeatures(
-      sql: SQLContext,
+      sql: SparkSession,
       numExamples: Long,
       seed: Long,
       numPartitions: Int,
@@ -27,11 +27,11 @@ object DataGenerator {
    *                      a value > 0 indicates a categorical feature with that arity.
    */
   def generateMixedFeatures(
-      sql: SQLContext,
-      numExamples: Long,
-      seed: Long,
-      numPartitions: Int,
-      featureArity: Array[Int]): DataFrame = {
+                             sql: SparkSession,
+                             numExamples: Long,
+                             seed: Long,
+                             numPartitions: Int,
+                             featureArity: Array[Int]): DataFrame = {
     val rdd: RDD[Vector] = RandomRDDs.randomRDD(sql.sparkContext,
       new FeaturesGenerator(featureArity), numExamples, numPartitions, seed)
     sql.createDataFrame(rdd.map(Tuple1.apply)).toDF("features")
@@ -42,7 +42,7 @@ object DataGenerator {
    * @param numCenters  Number of clusters in mixture
    */
   def generateGaussianMixtureData(
-      sql: SQLContext,
+      sql: SparkSession,
       numCenters: Int,
       numExamples: Long,
       seed: Long,
@@ -55,7 +55,7 @@ object DataGenerator {
   }
 
   def generateRatings(
-      sql: SQLContext,
+      sql: SparkSession,
       numUsers: Int,
       numProducts: Int,
       numExamples: Long,
@@ -104,7 +104,7 @@ object DataGenerator {
   }
 
   def generateRandString(
-      sql: SQLContext,
+      sql: SparkSession,
       numExamples: Long,
       seed: Long,
       numPartitions: Int,
@@ -116,7 +116,7 @@ object DataGenerator {
   }
 
   def generateDoc(
-      sql: SQLContext,
+      sql: SparkSession,
       numExamples: Long,
       seed: Long,
       numPartitions: Int,
@@ -129,7 +129,7 @@ object DataGenerator {
   }
 
   def generateItemSet(
-      sql: SQLContext,
+      sql: SparkSession,
       numExamples: Long,
       seed: Long,
       numPartitions: Int,

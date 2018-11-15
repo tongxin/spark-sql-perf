@@ -15,7 +15,7 @@ object VectorSlicer extends BenchmarkAlgorithm with TestFromTraining {
     import ctx.params._
 
     DataGenerator.generateContinuousFeatures(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

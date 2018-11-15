@@ -14,7 +14,7 @@ object ALS extends BenchmarkAlgorithm with ScoringWithEvaluator {
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
     DataGenerator.generateRatings(
-      ctx.sqlContext,
+      ctx.spark,
       numUsers,
       numItems,
       numExamples,
@@ -27,7 +27,7 @@ object ALS extends BenchmarkAlgorithm with ScoringWithEvaluator {
   override def testDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
     DataGenerator.generateRatings(
-      ctx.sqlContext,
+      ctx.spark,
       numUsers,
       numItems,
       numExamples,

@@ -20,14 +20,12 @@ import java.util.concurrent.LinkedBlockingQueue
 
 import scala.collection.immutable.Stream
 import scala.sys.process._
-
 import org.slf4j.LoggerFactory
-
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{Row, SQLContext, SaveMode}
+import org.apache.spark.sql.{Row, SaveMode, SparkSession}
 
 
 /**
@@ -94,8 +92,8 @@ trait DataGenerator extends Serializable {
 }
 
 
-abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
-    useDoubleForDecimal: Boolean = false, useStringForDate: Boolean = false)
+abstract class Tables(spark: SparkSession, scaleFactor: String,
+                      useDoubleForDecimal: Boolean = false, useStringForDate: Boolean = false)
     extends Serializable {
 
   def dataGenerator: DataGenerator
@@ -103,7 +101,7 @@ abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
 
   private val log = LoggerFactory.getLogger(getClass)
 
-  def sparkContext = sqlContext.sparkContext
+  def sparkContext = spark.sparkContext
 
   case class Table(name: String, partitionColumns: Seq[String], fields: StructField*) {
     val schema = StructType(fields)
@@ -138,7 +136,7 @@ abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
 
       if (convertToSchema) {
         val stringData =
-          sqlContext.createDataFrame(
+          spark.createDataFrame(
             rows,
             StructType(schema.fields.map(f => StructField(f.name, StringType))))
 
@@ -151,7 +149,7 @@ abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
 
         convertedData
       } else {
-        sqlContext.createDataFrame(rows, StructType(Seq(StructField("value", StringType))))
+        spark.createDataFrame(rows, StructType(Seq(StructField("value", StringType))))
       }
     }
 
@@ -203,7 +201,7 @@ abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
                |DISTRIBUTE BY
                |  $partitionColumnString
             """.stripMargin
-          val grouped = sqlContext.sql(query)
+          val grouped = spark.sql(query)
           println(s"Pre-clustering with partitioning columns with query $query.")
           log.info(s"Pre-clustering with partitioning columns with query $query.")
           grouped.write
@@ -216,7 +214,7 @@ abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
           // in case data has more than maxRecordsPerFile, split into multiple writers to improve datagen speed
           // files will be truncated to maxRecordsPerFile value, so the final result will be the same
           val numRows = data.count
-          val maxRecordPerFile = util.Try(sqlContext.getConf("spark.sql.files.maxRecordsPerFile").toInt).getOrElse(0)
+          val maxRecordPerFile = util.Try(spark.conf.get("spark.sql.files.maxRecordsPerFile").toInt).getOrElse(0)
 
           println(s"Data has $numRows rows clustered $clusterByPartitionColumns for $maxRecordPerFile")
           log.info(s"Data has $numRows rows clustered $clusterByPartitionColumns for $maxRecordPerFile")
@@ -240,44 +238,44 @@ abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
       println(s"Generating table $name in database to $location with save mode $mode.")
       log.info(s"Generating table $name in database to $location with save mode $mode.")
       writer.save(location)
-      sqlContext.dropTempTable(tempTableName)
+      spark.catalog.dropTempView(tempTableName)
     }
 
     def createExternalTable(location: String, format: String, databaseName: String,
       overwrite: Boolean, discoverPartitions: Boolean = true): Unit = {
 
       val qualifiedTableName = databaseName + "." + name
-      val tableExists = sqlContext.tableNames(databaseName).contains(name)
+      val tableExists = spark.catalog.tableExists(name)
       if (overwrite) {
-        sqlContext.sql(s"DROP TABLE IF EXISTS $databaseName.$name")
+        spark.sql(s"DROP TABLE IF EXISTS $databaseName.$name")
       }
       if (!tableExists || overwrite) {
         println(s"Creating external table $name in database $databaseName using data stored in $location.")
         log.info(s"Creating external table $name in database $databaseName using data stored in $location.")
-        sqlContext.createExternalTable(qualifiedTableName, location, format)
+        spark.catalog.createExternalTable(qualifiedTableName, location, format)
       }
       if (partitionColumns.nonEmpty && discoverPartitions) {
         println(s"Discovering partitions for table $name.")
         log.info(s"Discovering partitions for table $name.")
-        sqlContext.sql(s"ALTER TABLE $databaseName.$name RECOVER PARTITIONS")
+        spark.sql(s"ALTER TABLE $databaseName.$name RECOVER PARTITIONS")
       }
     }
 
     def createTemporaryTable(location: String, format: String): Unit = {
       println(s"Creating temporary table $name using data stored in $location.")
       log.info(s"Creating temporary table $name using data stored in $location.")
-      sqlContext.read.format(format).load(location).createOrReplaceTempView(name)
+      spark.read.format(format).load(location).createOrReplaceTempView(name)
     }
 
     def analyzeTable(databaseName: String, analyzeColumns: Boolean = false): Unit = {
       println(s"Analyzing table $name.")
       log.info(s"Analyzing table $name.")
-      sqlContext.sql(s"ANALYZE TABLE $databaseName.$name COMPUTE STATISTICS")
+      spark.sql(s"ANALYZE TABLE $databaseName.$name COMPUTE STATISTICS")
       if (analyzeColumns) {
         val allColumns = fields.map(_.name).mkString(", ")
         println(s"Analyzing table $name columns $allColumns.")
         log.info(s"Analyzing table $name columns $allColumns.")
-        sqlContext.sql(s"ANALYZE TABLE $databaseName.$name COMPUTE STATISTICS FOR COLUMNS $allColumns")
+        spark.sql(s"ANALYZE TABLE $databaseName.$name COMPUTE STATISTICS FOR COLUMNS $allColumns")
       }
     }
   }
@@ -320,12 +318,12 @@ abstract class Tables(sqlContext: SQLContext, scaleFactor: String,
       tables.filter(_.name == tableFilter)
     }
 
-    sqlContext.sql(s"CREATE DATABASE IF NOT EXISTS $databaseName")
+    spark.sql(s"CREATE DATABASE IF NOT EXISTS $databaseName")
     filtered.foreach { table =>
       val tableLocation = s"$location/${table.name}"
       table.createExternalTable(tableLocation, format, databaseName, overwrite, discoverPartitions)
     }
-    sqlContext.sql(s"USE $databaseName")
+    spark.sql(s"USE $databaseName")
     println(s"The current database has been set to $databaseName.")
     log.info(s"The current database has been set to $databaseName.")
   }

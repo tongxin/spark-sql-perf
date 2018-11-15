@@ -14,10 +14,10 @@ object OneHotEncoder extends BenchmarkAlgorithm with TestFromTraining with Unary
 
   override def trainingDataSet(ctx: MLBenchContext): DataFrame = {
     import ctx.params._
-    import ctx.sqlContext.implicits._
+    import ctx.spark.implicits._
 
     DataGenerator.generateMixedFeatures(
-      ctx.sqlContext,
+      ctx.spark,
       numExamples,
       ctx.seed(),
       numPartitions,

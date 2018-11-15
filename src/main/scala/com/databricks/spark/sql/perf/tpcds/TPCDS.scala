@@ -17,25 +17,24 @@
 package com.databricks.spark.sql.perf.tpcds
 
 import scala.collection.mutable
-
 import com.databricks.spark.sql.perf._
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 
 /**
  * TPC-DS benchmark's dataset.
  *
  * @param sqlContext An existing SQLContext.
  */
-class TPCDS(@transient sqlContext: SQLContext)
-  extends Benchmark(sqlContext)
+class TPCDS(@transient spark: SparkSession)
+  extends Benchmark(spark)
   with ImpalaKitQueries
   with SimpleQueries
   with Tpcds_1_4_Queries
   with Tpcds_2_4_Queries
   with Serializable {
 
-  def this() = this(SQLContext.getOrCreate(SparkContext.getOrCreate()))
+  def this() = this(SparkSession.builder().getOrCreate())
 
   /*
   def setupBroadcast(skipTables: Seq[String] = Seq("store_sales", "customer")) = {
@@ -61,7 +60,7 @@ class TPCDS(@transient sqlContext: SQLContext)
     queries.foreach { q =>
       println(s"Query: ${q.name}")
       try {
-        val df = sqlContext.sql(q.sqlText.get)
+        val df = spark.sql(q.sqlText.get)
         if (showPlan) {
           df.explain()
         } else {
@@ -82,13 +81,13 @@ class TPCDS(@transient sqlContext: SQLContext)
     queries.foreach { q =>
       println(s"Query: ${q.name}")
       val start = System.currentTimeMillis()
-      val df = sqlContext.sql(q.sqlText.get)
+      val df = spark.sql(q.sqlText.get)
       var failed = false
       val jobgroup = s"benchmark ${q.name}"
       val t = new Thread("query runner") {
         override def run(): Unit = {
           try {
-            sqlContext.sparkContext.setJobGroup(jobgroup, jobgroup, true)
+            spark.sparkContext.setJobGroup(jobgroup, jobgroup, true)
             df.show(numRows)
           } catch {
             case e: Exception =>
@@ -102,7 +101,7 @@ class TPCDS(@transient sqlContext: SQLContext)
       t.join(timeout)
       if (t.isAlive) {
         println(s"Timeout after $timeout seconds")
-        sqlContext.sparkContext.cancelJobGroup(jobgroup)
+        spark.sparkContext.cancelJobGroup(jobgroup)
         t.interrupt()
       } else {
         if (!failed) {
