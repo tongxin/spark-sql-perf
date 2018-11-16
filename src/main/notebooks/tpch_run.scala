@@ -2,7 +2,7 @@
 // TPCH runner (from spark-sql-perf) to be used on existing tables
 // edit the main configuration below
 
-val scaleFactors = Seq(1, 10, 100, 1000) //set scale factors to run
+val scaleFactors = Seq(1) // Seq(1, 10, 100, 1000) //set scale factors to run
 val format = "parquet" //format has have already been generated
 
 def perfDatasetsLocation(scaleFactor: Int, format: String) = 
@@ -34,7 +34,7 @@ for ((k,v) <- config) println(k, spark.conf.get(k))
 // Print all for easy debugging
 print(spark.conf.getAll)
 
-val tpch = new TPCH(sqlContext = spark.sqlContext)
+val tpch = new TPCH(spark)
 
 // filter queries (if selected)
 import com.databricks.spark.sql.perf.Query
@@ -52,7 +52,7 @@ val queries = (1 to 22).map { q =>
 
 scaleFactors.foreach{ scaleFactor =>
   println("DB SF " + databaseName(scaleFactor, format))
-  sql(s"USE ${databaseName(scaleFactor, format)}")
+  spark.sql(s"USE ${databaseName(scaleFactor, format)}")
   val experiment = tpch.runExperiment(
    queries,
    iterations = iterations,
