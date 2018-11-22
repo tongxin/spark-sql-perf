@@ -204,6 +204,11 @@ abstract class Tables(spark: SparkSession, scaleFactor: String,
           val grouped = spark.sql(query)
           println(s"Pre-clustering with partitioning columns with query $query.")
           log.info(s"Pre-clustering with partitioning columns with query $query.")
+          val numRows = grouped.count
+          val maxRecordPerFile = util.Try(spark.conf.get("spark.sql.files.maxRecordsPerFile").toInt).getOrElse(0)
+          println(s"Data has $numRows rows clustered $clusterByPartitionColumns for $maxRecordPerFile")
+          log.info(s"Data has $numRows rows clustered $clusterByPartitionColumns for $maxRecordPerFile")
+
           grouped.write
         } else {
           data.write

@@ -27,7 +27,6 @@ import scala.util.control.NonFatal
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Dataset, DataFrame, SparkSession}
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
-import org.apache.spark.SparkContext
 
 import com.databricks.spark.sql.perf.cpu._
 

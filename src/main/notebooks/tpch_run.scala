@@ -6,9 +6,9 @@ val scaleFactors = Seq(1) // Seq(1, 10, 100, 1000) //set scale factors to run
 val format = "parquet" //format has have already been generated
 
 def perfDatasetsLocation(scaleFactor: Int, format: String) = 
-  s"s3a://my-bucket/tpch/sf${scaleFactor}_${format}"
+  s"/tmp/tpch/tpch/sf${scaleFactor}_${format}"
 
-val resultLocation = "s3a://my-bucket/results"
+val resultLocation = "/tmp/tpch/results"
 val iterations = 2
 def databaseName(scaleFactor: Int, format: String) = s"tpch_sf${scaleFactor}_${format}"
 val randomizeQueries = false //to use on concurrency tests
@@ -16,7 +16,7 @@ val randomizeQueries = false //to use on concurrency tests
 // Experiment metadata for results, edit if outside Databricks
 val configuration = "default" //use default when using the out-of-box config
 val runtype = "TPCH run" // Edit
-val workers = 10 // Edit to the number of worker
+val workers = "1" // Edit to the number of worker
 val workerInstanceType = "my_VM_instance" // Edit to the instance type
 
 // Make sure spark-sql-perf library is available (use the assembly version)
