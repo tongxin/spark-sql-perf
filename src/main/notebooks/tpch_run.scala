@@ -2,7 +2,7 @@
 // TPCH runner (from spark-sql-perf) to be used on existing tables
 // edit the main configuration below
 
-val scaleFactors = Seq(1) // Seq(1, 10, 100, 1000) //set scale factors to run
+val scaleFactors = Seq(20) // Seq(1, 10, 100, 1000) //set scale factors to run
 val format = "parquet" //format has have already been generated
 
 def perfDatasetsLocation(scaleFactor: Int, format: String) = 
